@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include "bignum.h"
 
@@ -184,6 +185,8 @@ BigNum BigNum::divide(const BigNum &val)
 {
 	if (val.len == 0)
 		return BigNum();
+	if (*this < val)
+		return BigNum();
 	int diff = this->len - val.len;
 	BigNum tab[11];
 	for (int i = 0; i<11; i++)
@@ -280,10 +283,40 @@ bool BigNum::operator<(const BigNum &val) const
 
 bool BigNum::operator>(const BigNum &val) const
 {
-	return !this->operator<(val);
+	if (this->len > val.len)
+		return true;
+	else if (this->len < val.len)
+		return false;
+	for (int i = this->len - 1; i >= 0; i--)
+	{
+		if (this->data[i] > val.data[i])
+			return true;
+		else if (this->data[i] < val.data[i])
+			return false;
+	}
+	return false;
 }
 
 BigNum BigNum::operator-(const BigNum &val) const
 {
 	return this->subtract(val);
+}
+
+
+long BigNum::toLong()const
+{
+	char *temp = new char[this->len];
+	memcpy(temp, this->data, sizeof(char)*static_cast<size_t>(this->len));
+	char ch;
+	for (int i = 0; i < (this->len >> 1); i++)
+	{
+		ch = temp[i];
+		temp[i] = temp[this->len - i - 1]+'0';
+		temp[this->len - i - 1] = ch+'0';
+	}
+	if (this->len & 1)
+		temp[this->len >> 1] += '0';
+	long ans = atol(temp);
+	delete[]temp;
+	return ans;
 }
