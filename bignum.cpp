@@ -21,6 +21,12 @@ BigNum::~BigNum()
 
 BigNum::BigNum(const long&val)
 {
+	if (!val)
+	{
+		this->len = 0;
+		this->data = nullptr;
+		return;
+	}
 	char temp[30] = { 0 };
 	sprintf(temp, "%ld", val);
 	this->len = static_cast<int>(strlen(temp));
@@ -35,6 +41,12 @@ BigNum::BigNum(const long&val)
 BigNum::BigNum(const char* val)
 {
 	this->len = static_cast<int>(strlen(val));
+	if (1 == this->len&&'0' == val[0])
+	{
+		this->len = 1;
+		this->data = nullptr;
+		return;
+	}
 	for (int i = 0; i<this->len; i++)
 	{
 		this->data[i] = val[this->len - i - 1] - '0';
