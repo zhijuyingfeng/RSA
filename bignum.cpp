@@ -47,7 +47,7 @@ BigNum::BigNum(const char* val)
 		this->data = nullptr;
 		return;
 	}
-    this->data=new char[this->len];
+	this->data = new char[this->len];
 	for (int i = 0; i<this->len; i++)
 	{
 		this->data[i] = val[this->len - i - 1] - '0';
@@ -59,9 +59,9 @@ BigNum BigNum::add(const BigNum &val)const
 	BigNum ans;
 	int max = max(val.len, this->len);
 	int min = min(val.len, this->len);
-	char *temp = new char[max+1];
+	char *temp = new char[max + 1];
 	memset(temp, 0, sizeof(char)*static_cast<size_t>(max + 1));
-    char carry = 0;
+	char carry = 0;
 	for (int i = 0; i < min; i++)
 	{
 		char ch = this->data[i] + carry + val.data[i];
@@ -101,7 +101,7 @@ BigNum BigNum::add(const BigNum &val)const
 	if (carry)
 		temp[max] = carry;
 	int i = max;
-	while (i&&!temp[i])i--;
+	while (i && !temp[i])i--;
 	ans.len = i + 1;
 	ans.data = new char[ans.len];
 	memset(ans.data, 0, sizeof(char)*static_cast<size_t>(ans.len));
@@ -113,11 +113,11 @@ BigNum BigNum::add(const BigNum &val)const
 BigNum::BigNum(const BigNum&val)
 {
 	this->len = val.len;
-    if(!this->len)
-    {
-        this->data=nullptr;
-        return;
-    }
+	if (!this->len)
+	{
+		this->data = nullptr;
+		return;
+	}
 	this->data = new char[this->len];
 	memcpy(this->data, val.data, sizeof(char)*static_cast<unsigned>(this->len));
 }
@@ -126,11 +126,11 @@ BigNum BigNum::operator=(const BigNum &val)
 {
 	delete[] this->data;
 	this->len = val.len;
-    if(!this->len)
-    {
-        this->data=nullptr;
-        return *this;
-    }
+	if (!this->len)
+	{
+		this->data = nullptr;
+		return *this;
+	}
 	this->data = new char[this->len];
 	memcpy(this->data, val.data, sizeof(char)*static_cast<unsigned>(this->len));
 	return *this;
@@ -233,8 +233,8 @@ BigNum BigNum::divide(const BigNum &val)const
 		while (tab[count]<resi)count++;
 		if (tab[count]>resi)count--;
 		resi = (resi - tab[count]) * 10;
-        if (i)
-			resi = resi .add( this->data[i - 1]);
+		if (i)
+			resi = resi.add(this->data[i - 1]);
 		res[i] = static_cast<char>(count);
 	}
 
@@ -333,8 +333,8 @@ long BigNum::toLong()const
 	for (int i = 0; i < (this->len >> 1); i++)
 	{
 		ch = temp[i];
-		temp[i] = temp[this->len - i - 1]+'0';
-		temp[this->len - i - 1] = ch+'0';
+		temp[i] = temp[this->len - i - 1] + '0';
+		temp[this->len - i - 1] = ch + '0';
 	}
 	if (this->len & 1)
 		temp[this->len >> 1] += '0';
@@ -345,110 +345,112 @@ long BigNum::toLong()const
 
 BigNum BigNum::mod(const BigNum &val)const
 {
-    if (val.len == 0)
-        return BigNum();
-    if (*this < val)
-        return *this;
-    int diff = this->len - val.len;
-    BigNum tab[11];
-    for (int i = 0; i<11; i++)
-    {
-        tab[i] = val * i;
-    }
+	if (val.len == 0)
+		return BigNum();
+	if (*this < val)
+		return *this;
+	int diff = this->len - val.len;
+	BigNum tab[11];
+	for (int i = 0; i<11; i++)
+	{
+		tab[i] = val * i;
+	}
 
-    BigNum resi;
-    resi.len = val.len;
-    resi.data = new char[resi.len];
-    memset(resi.data, 0, sizeof(char)*static_cast<size_t>(resi.len));
-    memcpy(resi.data, this->data + diff, sizeof(char)*static_cast<size_t>(val.len));
+	BigNum resi;
+	resi.len = val.len;
+	resi.data = new char[resi.len];
+	memset(resi.data, 0, sizeof(char)*static_cast<size_t>(resi.len));
+	memcpy(resi.data, this->data + diff, sizeof(char)*static_cast<size_t>(val.len));
 
-    int count;
-    for (int i = diff; i >= 0; i--)
-    {
-        count = 0;
-        while (tab[count]<resi)count++;
-        if (tab[count]>resi)count--;
-        resi = (resi - tab[count]);
-        if (i)
-        {
-            resi=resi.multiply(BigNum(10L));
-            resi = resi .add( this->data[i - 1]);
-        }
-    }
+	int count;
+	for (int i = diff; i >= 0; i--)
+	{
+		count = 0;
+		while (tab[count]<resi)count++;
+		if (tab[count]>resi)count--;
+		resi = (resi - tab[count]);
+		if (i)
+		{
+			resi = resi.multiply(BigNum(10L));
+			resi = resi.add(this->data[i - 1]);
+		}
+	}
 
-    return resi;
+	return resi;
 }
 
 BigNum BigNum::operator%(const BigNum &val) const
 {
-    return this->mod(val);
+	return this->mod(val);
 }
 
 BigNum BigNum::operator*(const BigNum &val) const
 {
-    return this->multiply(val);
+	return this->multiply(val);
 }
 
 BigNum BigNum::power(const BigNum &exponent) const
 {
-    if(exponent.equalZero())
-        return BigNum(1L);
-    else if(exponent.equalOne())
-        return *this;
-    BigNum half=exponent/2;
-    BigNum temp=this->power(half);
-    temp=temp.multiply(temp);
-    if(exponent.data[0]&1)
-        return this->multiply(temp);
-    else
-        return temp;
+	if (exponent.equalZero())
+		return BigNum(1L);
+	else if (exponent.equalOne())
+		return *this;
+	BigNum half = exponent / 2;
+	BigNum temp = this->power(half);
+	temp = temp.multiply(temp);
+	if (exponent.data[0] & 1)
+		return this->multiply(temp);
+	else
+		return temp;
 }
 
 bool BigNum::equalOne() const
 {
-    if(this->len!=1)
-        return false;
-    if(this->data[0]!=1)
-        return false;
-    return true;
+	if (this->len != 1)
+		return false;
+	if (this->data[0] != 1)
+		return false;
+	return true;
 }
 
 bool BigNum::equalZero() const
 {
-    return 0==this->len;
+	return 0 == this->len;
 }
 
 BigNum BigNum::operator/(const long &val) const
 {
-    return this->divide(BigNum(val));
+	return this->divide(BigNum(val));
 }
 
 BigNum BigNum::operator/(const BigNum &val) const
 {
-    return this->divide(val);
+	return this->divide(val);
 }
 
 BigNum BigNum::operator-(const long &val) const
 {
-    return this->subtract(BigNum(val));
+	return this->subtract(BigNum(val));
 }
 
 BigNum BigNum::operator+(const long &val) const
 {
-    return this->add(BigNum(val));
+	return this->add(BigNum(val));
 }
 
 BigNum BigNum::powerMod(const BigNum &exponent, const BigNum &n) const
 {
-    if(exponent.equalZero())
-        return BigNum(1L).mod(n);
-    else if(exponent.equalOne())
-        return (*this)%n;
-    BigNum half=exponent/2;
-    BigNum temp=this->powerMod(half,n);
-    temp=temp.multiply(temp).mod(n);
-    if(exponent.data[0]&1)
-        return this->multiply(temp).mod(n);
-    else
-        return temp;
+	if (n.equalZero())
+		return BigNum();
+	else if (exponent.equalZero())
+		return BigNum(1L).mod(n);
+	else if (exponent.equalOne())
+		return (*this) % n;
+	BigNum half = exponent / 2;
+	BigNum temp = this->powerMod(half, n);
+	temp = temp.multiply(temp).mod(n);
+	if (exponent.data[0] & 1)
+		return this->multiply(temp).mod(n);
+	else
+		return temp;
 }

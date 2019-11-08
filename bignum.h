@@ -35,33 +35,33 @@ public:
 	BigNum multiply(const int& val)const;
 
 	//Returns a BigNum whose value is (this / val).
-    BigNum divide(const BigNum&val)const;
+	BigNum divide(const BigNum&val)const;
 
 	//Returns a BigNum whose value is (this mod m).
 	BigNum mod(const BigNum&m)const;
 
-    //Returns a BigNum whose value is (this^exponent).
-    BigNum power(const BigNum& exponent)const;
+	//Returns a BigNum whose value is (this^exponent).
+	BigNum power(const BigNum& exponent)const;
 
-    BigNum powerMod(const BigNum& exponent,const BigNum&n)const;
+	BigNum powerMod(const BigNum& exponent, const BigNum&n)const;
 
 	void show()const;
 	long toLong()const;
-    bool equalZero()const;
-    bool equalOne()const;
+	bool equalZero()const;
+	bool equalOne()const;
 
 	bool operator<(const BigNum&val)const;
 	bool operator>(const BigNum&val)const;
 	BigNum operator=(const BigNum&val);
 	BigNum operator+(const BigNum&val)const;
-    BigNum operator+(const long&val)const;
-    BigNum operator-(const BigNum&val)const;
-    BigNum operator-(const long&val)const;
+	BigNum operator+(const long&val)const;
+	BigNum operator-(const BigNum&val)const;
+	BigNum operator-(const long&val)const;
 	BigNum operator*(const BigNum&val)const;
 	BigNum operator*(const int&val)const;
 	BigNum operator%(const BigNum&val)const;
-    BigNum operator/(const long&val)const;
-    BigNum operator/(const BigNum&val)const;
+	BigNum operator/(const long&val)const;
+	BigNum operator/(const BigNum&val)const;
 };
 
 #endif // BIGNUM_H
