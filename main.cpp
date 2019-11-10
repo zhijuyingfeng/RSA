@@ -32,6 +32,8 @@ void RSA_encrypt();
 
 int main()
 {
-    BigInteger p(p_string);
+    BigInteger p("12345678901234567890");
+    BigInteger p2=p.multiply(p);
+    p2.Show();
     return 0;
 }
