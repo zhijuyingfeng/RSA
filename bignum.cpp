@@ -1,456 +1,167 @@
 #include <cstdio>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include "bignum.h"
+#include "mpn.h"
 
-#define max(a,b) (a)>(b)?(a):(b)
-#define min(a,b) (a)<(b)?(a):(b)
-
-BigNum::BigNum()
+BigInteger::BigInteger(const char* val)
 {
-	//    this->data=new char[8];
-	//    memset(this->data,0,sizeof(char)<<3);
-	this->len = 0;
-	this->data = nullptr;
+    BigInteger result=valueOf(val);
+    this->ival=result.ival;
+    this->words=new int[this->ival];
+    memcpy(this->words,result.words,sizeof(int)*static_cast<size_t>(this->ival));
 }
 
-BigNum::~BigNum()
+BigInteger BigInteger::valueOf(const char*s)
 {
-	delete[] this->data;
+    int len=static_cast<int>(strlen(s));
+    if(len<=15)
+    {
+        return valueOf(atol(s));
+    }
+
+    int i;
+    char digit;
+    bool negative;
+    char* bytes;
+
+    /*
+     * TODO
+     * need to handle s is NULL here
+    */
+
+    char ch=s[0];
+    if(ch=='-')
+    {
+        negative=true;
+        i=1;
+        bytes=new char[len-1];
+    }
+    else
+    {
+        negative=false;
+        i=0;
+        bytes=new char[len];
+    }
+    int byte_len=0;
+    for(;i<len;i++)
+    {
+        ch=s[i];
+        digit=s[i]-'0';
+        bytes[byte_len++]=digit;
+    }
+    BigInteger ans=valueOf(bytes,byte_len,negative);
+    delete []bytes;
+    return ans;
 }
 
-BigNum::BigNum(const long&val)
+BigInteger BigInteger::valueOf(char *digits, const int &byte_len, const bool &negative)
 {
-	if (!val)
-	{
-		this->len = 0;
-		this->data = nullptr;
-		return;
-	}
-	char temp[30] = { 0 };
-	sprintf(temp, "%ld", val);
-	this->len = static_cast<int>(strlen(temp));
-	this->data = new char[this->len];
-	memset(this->data, 0, sizeof(char)*static_cast<size_t>(this->len));
-	for (int i = 0; i<this->len; i++)
-	{
-		this->data[i] = temp[this->len - i - 1] - '0';
-	}
+    int chars_per_word=9;
+    int *words=new int[byte_len/chars_per_word+1];
+    int size=MPN::set_str(words,digits,byte_len);
+    if(!size)
+        return ZERO;
+    if(words[size-1]<0)
+        words[size++]=0;
+    if(negative)
+        negate(words,words,size);
+    BigInteger ans=make(words,size);
+    delete [] words;
+    return ans;
 }
 
-BigNum::BigNum(const char* val)
+BigInteger::BigInteger(const int&val)
 {
-	this->len = static_cast<int>(strlen(val));
-	if (1 == this->len&&'0' == val[0])
-	{
-		this->len = 1;
-		this->data = nullptr;
-		return;
-	}
-	this->data = new char[this->len];
-	for (int i = 0; i<this->len; i++)
-	{
-		this->data[i] = val[this->len - i - 1] - '0';
-	}
+    this->ival=val;
+    this->words=nullptr;
 }
 
-BigNum BigNum::add(const BigNum &val)const
+BigInteger BigInteger::ZERO(0);
+BigInteger BigInteger::ONE(1);
+
+BigInteger::~BigInteger()
 {
-	BigNum ans;
-	int max = max(val.len, this->len);
-	int min = min(val.len, this->len);
-	char *temp = new char[max + 1];
-	memset(temp, 0, sizeof(char)*static_cast<size_t>(max + 1));
-	char carry = 0;
-	for (int i = 0; i < min; i++)
-	{
-		char ch = this->data[i] + carry + val.data[i];
-		if (ch >= 10)
-		{
-			carry = 1;
-			ch -= 10;
-		}
-		else
-			carry = 0;
-		temp[i] = ch;
-	}
-	for (int i = min; i < val.len; i++)
-	{
-		char ch = carry + val.data[i];
-		if (ch >= 10)
-		{
-			carry = 1;
-			ch -= 10;
-		}
-		else
-			carry = 0;
-		temp[i] = ch;
-	}
-	for (int i = min; i < this->len; i++)
-	{
-		char ch = this->data[i] + carry;
-		if (ch >= 10)
-		{
-			carry = 1;
-			ch -= 10;
-		}
-		else
-			carry = 0;
-		temp[i] = ch;
-	}
-	if (carry)
-		temp[max] = carry;
-	int i = max;
-	while (i && !temp[i])i--;
-	ans.len = i + 1;
-	ans.data = new char[ans.len];
-	memset(ans.data, 0, sizeof(char)*static_cast<size_t>(ans.len));
-	memcpy(ans.data, temp, sizeof(char)*static_cast<size_t>(ans.len));
-	delete[]temp;
-	return ans;
+    delete [] words;
 }
 
-BigNum::BigNum(const BigNum&val)
+bool BigInteger::negate(int *dest, int *src, const int &len)
 {
-	this->len = val.len;
-	if (!this->len)
-	{
-		this->data = nullptr;
-		return;
-	}
-	this->data = new char[this->len];
-	memcpy(this->data, val.data, sizeof(char)*static_cast<unsigned>(this->len));
+    long carry=1;
+    bool negative=src[len-1]<0;
+    for(int i=0;i<len;i++)
+    {
+        carry+=(static_cast<long>(~src[i])&0xFFFFFFFFL);
+        dest[i]=static_cast<int>(carry);
+        carry>>=32;
+    }
+    return (negative&&dest[len-1]<0);
 }
 
-BigNum BigNum::operator=(const BigNum &val)
+BigInteger BigInteger::make(int *words, const int &len)
 {
-	delete[] this->data;
-	this->len = val.len;
-	if (!this->len)
-	{
-		this->data = nullptr;
-		return *this;
-	}
-	this->data = new char[this->len];
-	memcpy(this->data, val.data, sizeof(char)*static_cast<unsigned>(this->len));
-	return *this;
+    if(words==nullptr)
+        return valueOf(len);
+    int Len=BigInteger::wordsNeeded(words,len);
+    if(Len<=1)
+        return !Len?ZERO:valueOf(words[0]);
+    BigInteger num(0);
+    num.ival=Len;
+    num.words=new int[Len];
+    memcpy(num.words,words,sizeof(int)*static_cast<size_t>(Len));
+    return num;
 }
 
-void BigNum::show()const
+int BigInteger::wordsNeeded(const int *words, const int &len)
 {
-	for (int i = 0; i<this->len; i++)
-		printf("%d", this->data[this->len - i - 1]);
-	printf("\n");
+    int i=len;
+    if(i>0)
+    {
+        int word=words[--i];
+        if(word==-1)
+        {
+            while(i>0&&(word=words[i-1])<0)
+            {
+                i--;
+                if(word!=-1)
+                    break;
+            }
+        }
+        else
+        {
+            while(word==0&&i>0&&(word=words[i-1])>=0)
+                i--;
+        }
+    }
+    return i+1;
 }
 
-BigNum::BigNum(const int &len)
+BigInteger BigInteger::operator=(const BigInteger &val)
 {
-	this->len = len;
-	this->data = new char[len];
-	memset(this->data, 0, sizeof(char)*static_cast<size_t>(len));
+    this->ival=val.ival;
+    delete [] this->words;
+    if(val.words==nullptr)
+    {
+        this->words=nullptr;
+    }
+    else
+    {
+        this->words=new int[this->ival];
+        memcpy(this->words,val.words,sizeof(int)*static_cast<size_t>(this->ival));
+    }
+    return *this;
 }
 
-BigNum BigNum::operator+(const BigNum &val) const
+BigInteger BigInteger::valueOf(const long &val)
 {
-	return this->add(val);
-}
-
-BigNum BigNum::multiply(const int &val) const
-{
-	BigNum ans;
-	for (int i = 0; i<this->len; i++)
-	{
-		long temp = val * this->data[i];
-		ans = ans.add(BigNum(temp, i));
-	}
-	return ans;
-}
-
-BigNum::BigNum(const long&val, const int&sl)
-{
-	char temp[30] = { 0 };
-	sprintf(temp, "%ld", val);
-	this->len = static_cast<int>(strlen(temp)) + sl;
-	this->data = new char[this->len];
-	memset(this->data, 0, sizeof(char)*static_cast<size_t>(this->len));
-	for (int i = sl; i<this->len; i++)
-	{
-		this->data[i] = temp[this->len - i - 1] - '0';
-	}
-}
-
-BigNum BigNum::operator*(const int &val) const
-{
-	return this->multiply(val);
-}
-
-BigNum BigNum::multiply(const BigNum &val) const
-{
-	BigNum ans;
-	for (int i = 0; i<val.len; i++)
-	{
-		BigNum temp = this->multiply(val.data[i]);
-		ans = ans.add(BigNum(temp, i));
-	}
-	return ans;
-}
-
-
-BigNum::BigNum(const BigNum& val, const int&sl)
-{
-	this->len = val.len + sl;
-	this->data = new char[this->len];
-	memset(this->data, 0, sizeof(char)*static_cast<size_t>(sl));
-	memcpy(this->data + sl, val.data, sizeof(char)*static_cast<size_t>(val.len));
-}
-
-BigNum BigNum::divide(const BigNum &val)const
-{
-	if (val.len == 0)
-		return BigNum();
-	if (*this < val)
-		return BigNum();
-	int diff = this->len - val.len;
-	BigNum tab[11];
-	for (int i = 0; i<11; i++)
-	{
-		tab[i] = val * i;
-	}
-
-	BigNum resi, ans;
-	resi.len = val.len;
-	resi.data = new char[resi.len];
-	memset(resi.data, 0, sizeof(char)*static_cast<size_t>(resi.len));
-	memcpy(resi.data, this->data + diff, sizeof(char)*static_cast<size_t>(val.len));
-
-	char *res = new char[diff + 1];
-	memset(res, 0, sizeof(char)*static_cast<size_t>(diff + 1));
-
-	int count;
-	for (int i = diff; i >= 0; i--)
-	{
-		count = 0;
-		while (tab[count]<resi)count++;
-		if (tab[count]>resi)count--;
-		resi = (resi - tab[count]) * 10;
-		if (i)
-			resi = resi.add(this->data[i - 1]);
-		res[i] = static_cast<char>(count);
-	}
-
-	ans.len = diff + 1;
-	if (!res[diff])
-		ans.len--;
-	ans.data = new char[ans.len];
-	memset(ans.data, 0, sizeof(char)*static_cast<size_t>(ans.len));
-	memcpy(ans.data, res, sizeof(char)*static_cast<size_t>(ans.len));
-	delete[] res;
-	return ans;
-}
-
-BigNum BigNum::add(const int &val) const
-{
-	return this->add(BigNum(static_cast<long>(val)));
-}
-
-BigNum BigNum::subtract(const BigNum &val) const
-{
-	char*temp = new char[this->len];
-	memset(temp, 0, sizeof(char)*static_cast<size_t>(this->len));
-	char carry = 0;
-	for (int i = 0; i<this->len; i++)
-	{
-		temp[i] = this->data[i] - carry;
-		if (i<val.len)
-			temp[i] -= val.data[i];
-		if (temp[i]<0)
-		{
-			temp[i] += 10;
-			carry = 1;
-		}
-		else
-		{
-			carry = 0;
-		}
-	}
-	BigNum ans;
-	int i = this->len - 1;
-	while (i && !temp[i])
-	{
-		i--;
-	}
-	ans.len = i + 1;
-	ans.data = new char[ans.len];
-	memset(ans.data, 0, sizeof(char)*static_cast<size_t>(ans.len));
-	memcpy(ans.data, temp, sizeof(char)*static_cast<size_t>(ans.len));
-	delete[] temp;
-	return ans;
-}
-
-bool BigNum::operator<(const BigNum &val) const
-{
-	if (this->len<val.len)
-		return true;
-	else if (this->len>val.len)
-		return false;
-	for (int i = this->len - 1; i >= 0; i--)
-	{
-		if (this->data[i]<val.data[i])
-			return true;
-		else if (this->data[i]>val.data[i])
-			return false;
-	}
-	return false;
-}
-
-bool BigNum::operator>(const BigNum &val) const
-{
-	if (this->len > val.len)
-		return true;
-	else if (this->len < val.len)
-		return false;
-	for (int i = this->len - 1; i >= 0; i--)
-	{
-		if (this->data[i] > val.data[i])
-			return true;
-		else if (this->data[i] < val.data[i])
-			return false;
-	}
-	return false;
-}
-
-BigNum BigNum::operator-(const BigNum &val) const
-{
-	return this->subtract(val);
-}
-
-
-long BigNum::toLong()const
-{
-	char *temp = new char[this->len];
-	memcpy(temp, this->data, sizeof(char)*static_cast<size_t>(this->len));
-	char ch;
-	for (int i = 0; i < (this->len >> 1); i++)
-	{
-		ch = temp[i];
-		temp[i] = temp[this->len - i - 1] + '0';
-		temp[this->len - i - 1] = ch + '0';
-	}
-	if (this->len & 1)
-		temp[this->len >> 1] += '0';
-	long ans = atol(temp);
-	delete[]temp;
-	return ans;
-}
-
-BigNum BigNum::mod(const BigNum &val)const
-{
-	if (val.len == 0)
-		return BigNum();
-	if (*this < val)
-		return *this;
-	int diff = this->len - val.len;
-	BigNum tab[11];
-	for (int i = 0; i<11; i++)
-	{
-		tab[i] = val * i;
-	}
-
-	BigNum resi;
-	resi.len = val.len;
-	resi.data = new char[resi.len];
-	memset(resi.data, 0, sizeof(char)*static_cast<size_t>(resi.len));
-	memcpy(resi.data, this->data + diff, sizeof(char)*static_cast<size_t>(val.len));
-
-	int count;
-	for (int i = diff; i >= 0; i--)
-	{
-		count = 0;
-		while (tab[count]<resi)count++;
-		if (tab[count]>resi)count--;
-		resi = (resi - tab[count]);
-		if (i)
-		{
-			resi = resi.multiply(BigNum(10L));
-			resi = resi.add(this->data[i - 1]);
-		}
-	}
-
-	return resi;
-}
-
-BigNum BigNum::operator%(const BigNum &val) const
-{
-	return this->mod(val);
-}
-
-BigNum BigNum::operator*(const BigNum &val) const
-{
-	return this->multiply(val);
-}
-
-BigNum BigNum::power(const BigNum &exponent) const
-{
-	if (exponent.equalZero())
-		return BigNum(1L);
-	else if (exponent.equalOne())
-		return *this;
-	BigNum half = exponent / 2;
-	BigNum temp = this->power(half);
-	temp = temp.multiply(temp);
-	if (exponent.data[0] & 1)
-		return this->multiply(temp);
-	else
-		return temp;
-}
-
-bool BigNum::equalOne() const
-{
-	if (this->len != 1)
-		return false;
-	if (this->data[0] != 1)
-		return false;
-	return true;
-}
-
-bool BigNum::equalZero() const
-{
-	return 0 == this->len;
-}
-
-BigNum BigNum::operator/(const long &val) const
-{
-	return this->divide(BigNum(val));
-}
-
-BigNum BigNum::operator/(const BigNum &val) const
-{
-	return this->divide(val);
-}
-
-BigNum BigNum::operator-(const long &val) const
-{
-	return this->subtract(BigNum(val));
-}
-
-BigNum BigNum::operator+(const long &val) const
-{
-	return this->add(BigNum(val));
-}
-
-BigNum BigNum::powerMod(const BigNum &exponent, const BigNum &n) const
-{
-	if (n.equalZero())
-		return BigNum();
-	else if (exponent.equalZero())
-		return BigNum(1L).mod(n);
-	else if (exponent.equalOne())
-		return (*this) % n;
-	BigNum half = exponent / 2;
-	BigNum temp = this->powerMod(half, n);
-	temp = temp.multiply(temp).mod(n);
-	if (exponent.data[0] & 1)
-		return this->multiply(temp).mod(n);
-	else
-		return temp;
+    int i=static_cast<int>(val);
+    if(static_cast<long>(i)==val)
+        return BigInteger(i);
+    BigInteger result(0);
+    result.ival=2;
+    result.words=new int[2];
+    result.words[0]=i;
+    result.words[1]=static_cast<int>(val>>32);
+    return result;
 }

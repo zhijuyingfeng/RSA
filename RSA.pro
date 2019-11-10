@@ -6,8 +6,10 @@ CONFIG -= qt
 SOURCES += \
         SHA1.cpp \
         bignum.cpp \
-        main.cpp
+        main.cpp \
+        mpn.cpp
 
 HEADERS += \
     SHA1.h \
-    bignum.h
+    bignum.h \
+    mpn.h

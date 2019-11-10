@@ -1,67 +1,46 @@
 #ifndef BIGNUM_H
 #define BIGNUM_H
 
-class BigNum
+class BigInteger
 {
-	int len;
-	char* data;
+private:
+    int ival;
+    int *words;
+
+    int bitLength=-1;
+    int signnum;
+
+    BigInteger(const int& val);
+
+//    const static int minFixNum=-128;
+//    const static int maxFixNum=127;
+    static BigInteger ZERO;
+    static BigInteger ONE;
+
+    static BigInteger valueOf(const char*s);
+    static BigInteger valueOf(char* digits,const int& byte_len,const bool &negative);
+
+    /** Make a canonicalized BigInteger from an array of words.
+    * The array may be reused (without copying). */
+    static BigInteger make(int* words,const int&len);
+
+    /** Calculate how many words are significant in words[0:len-1].
+    * Returns the least value x such that x>0 && words[0:x-1]==words[0:len-1],
+    * when words is viewed as a 2's complement integer.*/
+    static int wordsNeeded(const int*words,const int&len);
 public:
-	BigNum();
-	BigNum(const BigNum& val);
+    ~BigInteger();
+    BigInteger operator=(const BigInteger&val);
+    BigInteger(const char* val);
 
-	//Copy constructor,then shift left sl(times 10^sl).
-	BigNum(const BigNum& val, const int&sl);
-	~BigNum();
-	BigNum(const int&len);
+    /** Return a (possibly-shared) BigInteger with a given long value. */
+    static BigInteger valueOf(const long& val);
 
-	//Translates the decimal string representation of a BigInteger into a BigNum.
-	BigNum(const char* val);
+    /** Set dest[0:len-1] to the negation of src[0:len-1].
+    * Return true if overflow (i.e. if src is -2**(32*len-1)).
+    * Ok for src==dest. */
+    static bool negate(int *dest,int* src,const int&len);
 
-	//Translates a integer into a BigNum.
-	BigNum(const long&val);
-
-	//Translates a integer into a BigNum,then shift left sl(times 10^sl).
-	BigNum(const long&val, const int&sl);
-
-	//Returns a BigNum whose value is (this + val).
-	BigNum add(const BigNum&val)const;
-	BigNum add(const int&val)const;
-
-	//Returns a BigNum whose value is (this - val).
-	BigNum subtract(const BigNum&val)const;
-
-	//Returns a BigNum whose value is (this * val).
-	BigNum multiply(const BigNum& val)const;
-	BigNum multiply(const int& val)const;
-
-	//Returns a BigNum whose value is (this / val).
-	BigNum divide(const BigNum&val)const;
-
-	//Returns a BigNum whose value is (this mod m).
-	BigNum mod(const BigNum&m)const;
-
-	//Returns a BigNum whose value is (this^exponent).
-	BigNum power(const BigNum& exponent)const;
-
-	BigNum powerMod(const BigNum& exponent, const BigNum&n)const;
-
-	void show()const;
-	long toLong()const;
-	bool equalZero()const;
-	bool equalOne()const;
-
-	bool operator<(const BigNum&val)const;
-	bool operator>(const BigNum&val)const;
-	BigNum operator=(const BigNum&val);
-	BigNum operator+(const BigNum&val)const;
-	BigNum operator+(const long&val)const;
-	BigNum operator-(const BigNum&val)const;
-	BigNum operator-(const long&val)const;
-	BigNum operator*(const BigNum&val)const;
-	BigNum operator*(const int&val)const;
-	BigNum operator%(const BigNum&val)const;
-	BigNum operator/(const long&val)const;
-	BigNum operator/(const BigNum&val)const;
 };
 
 #endif // BIGNUM_H
