@@ -78,7 +78,7 @@ int MPN::add_n(int *dest, int *x, int *y, const int &len)
 void MPN::mul(int *dest, int *x, const int &xlen, int *y, const int &ylen)
 {
     dest[xlen]=mul_1(dest,x,xlen,y[0]);
-    for(int i=0;i<ylen;i++)
+    for(int i=1;i<ylen;i++)
     {
         long long yword=static_cast<long long>(y[i])&0xFFFFFFFFL;
         long long carry=0;
@@ -87,6 +87,7 @@ void MPN::mul(int *dest, int *x, const int &xlen, int *y, const int &ylen)
             long long temp=static_cast<long long>(x[j])&0xFFFFFFFFL;
             temp*=yword;
             temp+=static_cast<long long>(dest[i+j])&0xFFFFFFFFL;
+            carry+=temp;
 
             dest[i+j]=static_cast<int>(carry);
 

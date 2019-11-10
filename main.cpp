@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "bignum.h"
+#include "mpn.h"
 #include "SHA1.h"
 using namespace std;
 
@@ -35,5 +36,14 @@ int main()
     BigInteger p("12345678901234567890");
     BigInteger p2=p.multiply(p);
     p2.Show();
+
+//    int x[]={0x6B8B4567,0x327B23C6,0x643C9869};
+//    int y[]={0x66334873,0x74B0DC51,0x19495CFF};
+//    int *dest=new int[6];
+//    MPN::mul(dest,x,3,y,3);
+//    for(int i=0;i<6;i++)
+//        printf("%d\t",dest[i]);
+//    printf("\n");
+//    delete [] dest;
     return 0;
 }
