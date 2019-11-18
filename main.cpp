@@ -43,10 +43,14 @@ int main()
     BigInteger rsa_m(data,OAEP_PADDED_LENGTH>>2);
     BigInteger rsa_encrypted=rsa.encrypt(rsa_m);
     BigInteger rsa_decrypted=rsa.decrypt(rsa_encrypted);
+    rsa_m.show();
+    rsa_decrypted.show();
 
     memset(data,0,sizeof(data));
     rsa_decrypted.getWords(data);
     memcpy(oaep_c,data,sizeof(data));
     OAEP::decrypt(oaep_c,oeap_decrypted);
+    printf("%s\n",oeap_decrypted);
+
     return 0;
 }

@@ -100,6 +100,8 @@ public:
     const static BigInteger TEN;
 
     BigInteger();
+    BigInteger(const int32_t*data,const int32_t& len);
+    void getWords(int32_t* data)const;
     ~BigInteger();
     BigInteger(const BigInteger&val);
     BigInteger(const char* val);
