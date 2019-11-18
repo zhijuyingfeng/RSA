@@ -5,11 +5,15 @@ CONFIG -= qt
 
 SOURCES += \
         SHA1.cpp \
-        bignum.cpp \
+        bigint.cpp \
         main.cpp \
-        mpn.cpp
+        mpn.cpp \
+        oaep.cpp \
+        rsa.cpp
 
 HEADERS += \
     SHA1.h \
-    bignum.h \
-    mpn.h
+    bigint.h \
+    mpn.h \
+    oaep.h \
+    rsa.h

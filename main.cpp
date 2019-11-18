@@ -1,10 +1,13 @@
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
-#include "bignum.h"
+#include "bigint.h"
+#include "rsa.h"
 #include "mpn.h"
 #include "SHA1.h"
+#include "oaep.h"
 using namespace std;
 
 //temp=(p-3)*(q-3)*3/4
@@ -23,27 +26,27 @@ const char q_string[] =  "179763108085962807080093919657307409975718428269269435
                          "566914528483955014073455660937229038263";
 
 //static const BigNum PK=SK.powerMod((p-3)*(q-3)*3/4-1,phi_n);
-
-/*
-1657638504213882438612915678406897850953771977370767973388101092333569881287258488509212557998784730580049101760347534298806565841062311630059922070026166286332428419339820296006220687116294992148942312822844093313409286176749416399242782263350591360704308206429921405011294641011979175751598446203645185965743503742905643318236399907630783004132454014479796501973248311464515422287590903500456569467614775245698691098134433920112088720497870313969409957141055025352822532164149333775229903313437681069433083250413406187496669691271354077157846897433215011358483874741923356675695266865372804229680571394794561748649
-
-*/
-
-void RSA_encrypt();
+const static int32_t OAEP_PADDED_LENGTH=256;
 
 int main()
 {
-    BigInteger p("12345678901234567890");
-    BigInteger p2=p.multiply(p);
-    p2.Show();
+    const char m[]="SUN Yat-sen University";
+    BigInteger p(p_string),q(q_string),e("16303069");
+    RSA rsa(p,q,e);
 
-//    int x[]={0x6B8B4567,0x327B23C6,0x643C9869};
-//    int y[]={0x66334873,0x74B0DC51,0x19495CFF};
-//    int *dest=new int[6];
-//    MPN::mul(dest,x,3,y,3);
-//    for(int i=0;i<6;i++)
-//        printf("%d\t",dest[i]);
-//    printf("\n");
-//    delete [] dest;
+    char oaep_c[OAEP_PADDED_LENGTH];
+    char oeap_decrypted[OAEP_PADDED_LENGTH];
+    int32_t data[OAEP_PADDED_LENGTH>>2];
+    OAEP::encrypt(m,oaep_c);
+    memcpy(data,oaep_c,sizeof(data));
+
+    BigInteger rsa_m(data,OAEP_PADDED_LENGTH>>2);
+    BigInteger rsa_encrypted=rsa.encrypt(rsa_m);
+    BigInteger rsa_decrypted=rsa.decrypt(rsa_encrypted);
+
+    memset(data,0,sizeof(data));
+    rsa_decrypted.getWords(data);
+    memcpy(oaep_c,data,sizeof(data));
+    OAEP::decrypt(oaep_c,oeap_decrypted);
     return 0;
 }
