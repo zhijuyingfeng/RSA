@@ -23,12 +23,12 @@ void OAEP::SHA1( char *m, char *res)
 
 void OAEP::encrypt(const char *m, char *res)
 {
-    srand(0);
+//    srand(0);
 	char r[byteNumber];
 	for (int32_t i = 0; i<(byteNumber >> 2); i++)
 	{
         int32_t temp = rand();
-//		int32_t temp = 0;
+//        int32_t temp = 0;
 		memcpy(r + (i << 2), &temp, sizeof(int32_t));
 	}
 	char x[byteNumber] = { 0 };

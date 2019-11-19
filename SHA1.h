@@ -1,5 +1,7 @@
 #ifndef SHA1_H
 #define SHA1_H
+#include <cstdint>
+
 void init( char* s);
 void destroy();
 void SHAPad();
@@ -15,6 +17,6 @@ void MainLoop(const unsigned char* Mi);
 void SHA( char* s, char* res,const int&len);
 void ShowHash();
 unsigned ROTL(const unsigned &x, const unsigned& s);
-unsigned long long swap_uint64(const unsigned long long& x);
+uint64_t swap_uint64(const uint64_t& x);
 unsigned swap_uint32(const unsigned &x);
 #endif // SHA1_H

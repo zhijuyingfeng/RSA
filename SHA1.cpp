@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
-#include <cstdint>
 #include "SHA1.h"
 using namespace std;
 

@@ -29,7 +29,7 @@ int main()
 
     char oaep_en[256];
     char oaep_de[128];
-    int32_t oaep_en_data[64],rsa_de_data[64];
+    int32_t oaep_en_data[64],rsa_de_data[64]={0};
     char oaep_en_data_2[256];
 
     BigInteger p(p_string),q(q_string),e(e_string);
@@ -47,6 +47,12 @@ int main()
     printf("\nTime elapsed:\t%lfms\n\n",1000.0*t/CLOCKS_PER_SEC);
     t=clock();
 
+    for(int i=0;i<32;i++)
+    {
+        int temp=oaep_en_data[i];
+        oaep_en_data[i]=oaep_en_data[64-i-1];
+        oaep_en_data[64-i-1]=temp;
+    }
     BigInteger rsa_m(oaep_en_data,64);
     BigInteger rsa_en=rsa.encrypt(rsa_m);
     printf("After RSA encryption:\n");
@@ -63,6 +69,12 @@ int main()
     t=clock();
 
     rsa_de.getWords(rsa_de_data);
+    for(int i=0;i<32;i++)
+    {
+        int temp=rsa_de_data[i];
+        rsa_de_data[i]=rsa_de_data[64-i-1];
+        rsa_de_data[64-i-1]=temp;
+    }
 
     memcpy(oaep_en_data_2,rsa_de_data,sizeof(rsa_de_data));
     OAEP::decrypt(oaep_en_data_2,oaep_de);
