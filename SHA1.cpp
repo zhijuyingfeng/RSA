@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+#include <cstdint>
 #include "SHA1.h"
 using namespace std;
 
@@ -9,7 +10,7 @@ const unsigned MAX_LENGTH = 128;
 
 static char* str;
 static unsigned char *last;
-static unsigned long length;
+static uint64_t length;
 static unsigned remain;
 static unsigned int H[5];
 
@@ -44,9 +45,9 @@ void SHAPad()
 	memset(last + remain, 0, sizeof(char)*temp);
 	last[remain] = 0x80;
 	remain += temp;
-	unsigned long long big = swap_uint64(length);
-	memcpy(last + remain, &big, sizeof(long long));
-	remain += sizeof(long long);
+    uint64_t big = swap_uint64(length);
+    memcpy(last + remain, &big, sizeof(int64_t));
+    remain += sizeof(int64_t);
 	remain <<= 3;
 }
 
@@ -108,12 +109,12 @@ unsigned f3(const unsigned &B, const unsigned &C, const unsigned &D)
 
 void SHA( char* s, char *res,const int& len)
 {
-	length = len;
+    length = static_cast<uint64_t>(len);
 	init(s);
 
-	long n = static_cast<long>((length >> 9));
+    int64_t n = static_cast<int64_t>((length >> 9));
 	unsigned char temp[64];
-	for (long i = 0; i<n; i++)
+    for (int64_t i = 0; i<n; i++)
 	{
 		memcpy(temp, str + (i << 6), sizeof(char) << 6);
 		MainLoop(temp);
@@ -134,9 +135,9 @@ void SHA( char* s, char *res,const int& len)
 	destroy();
 }
 
-unsigned long long swap_uint64(const unsigned long long& x)
+uint64_t swap_uint64(const uint64_t& x)
 {
-	unsigned long long val = x;
+    uint64_t val = x;
 	val = ((val << 8) & 0xFF00FF00FF00FF00ULL) | ((val >> 8) & 0x00FF00FF00FF00FFULL);
 	val = ((val << 16) & 0xFFFF0000FFFF0000ULL) | ((val >> 16) & 0x0000FFFF0000FFFFULL);
 	return (val << 32) | (val >> 32);

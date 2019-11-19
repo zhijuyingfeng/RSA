@@ -3,18 +3,21 @@
 #include <cstdio>
 #include "oaep.h"
 
+static const int32_t byteNumber = 128;
+static const int32_t SHA1Length = 20;
+
 void OAEP::SHA1( char *m, char *res)
 {
 	memset(res, 0, sizeof(char)*byteNumber);
 	char sha1[SHA1Length+1];
-	for (int i = 0; i<6; i++)
+    for (int32_t i = 0; i<6; i++)
 	{
 		if(!i)
 			SHA(m, sha1,byteNumber);
 		else
 			SHA(sha1, sha1, SHA1Length);
 
-		memcpy(res + 8 + SHA1Length * i, sha1, sizeof(char)*SHA1Length);
+        memcpy(res + 8 + SHA1Length * i, sha1, sizeof(char)*SHA1Length);
 	}
 }
 
@@ -58,12 +61,20 @@ void OAEP::decrypt(const char *c, char *res)
 	char x1[byteNumber], x2[byteNumber];
 	char G[byteNumber], H[byteNumber];
 	char r[byteNumber];
+    memset(res,0,sizeof(char)*byteNumber);
 	memcpy(x1, c, sizeof(char)*byteNumber);
 	memcpy(x2, c + byteNumber, sizeof(char)*byteNumber);
 	SHA1(x1, H);
 	for (int32_t i = 0; i<byteNumber; i++)
 		r[i] = x2[i] ^ H[i];
 	SHA1(r, G);
+
+    int32_t count=0;
+    char ch;
 	for (int32_t i = 0; i<byteNumber; i++)
-		res[i] = G[i] ^ x1[i];
+    {
+        ch=G[i]^x1[i];
+        if(ch)
+            res[count++]=ch;
+    }
 }
