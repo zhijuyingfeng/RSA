@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <cmath>
+#include "bigint.h"
 #include "rsa.h"
 #include "oaep.h"
 #include "SHA1.h"
@@ -22,8 +23,9 @@ int main()
                             "449358830496413557281341725462360322134010042282012642"
                             "274593164792155394683891626920676409771537318196968561"
                             "566914528483955014073455660937229038263";
+    //学号为16303067，下一个素数为16303069
     const char e_string[]="16303069";
-    const char m[]="Sun yat-sen University";
+    const char m[]="Sun Yat-sen University";
 
     char oaep_en[256];
     char oaep_de[128];
@@ -68,5 +70,6 @@ int main()
     printf("%s\n",oaep_de);
     t=clock()-t;
     printf("Time elapsed:\t%lfms\n\n",1000.0*t/CLOCKS_PER_SEC);
+
     return 0;
 }
