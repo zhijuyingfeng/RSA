@@ -11,14 +11,19 @@ static char* str;
 static unsigned char *last;
 static unsigned long length;
 static unsigned remain;
-static unsigned int H[] = { 0x67452301,0xEFCDAB89,0x98BADCFE,0x10325476,0xC3D2E1F0 };
+static unsigned int H[5];
 
-void init(char* s)
+void init( char* s)
 {
+	H[0] = 0x67452301;
+	H[1] = 0xEFCDAB89;
+	H[2] = 0x98BADCFE;
+	H[3] = 0x10325476;
+	H[4] = 0xC3D2E1F0;
 	str = s;
 	last = new unsigned char[MAX_LENGTH];
 	memset(last, 0, sizeof(char)*MAX_LENGTH);
-	length = strlen(str);
+	//length = strlen(str);
 	remain = (length & 0x3F);
 	memcpy(last, str + length - remain, sizeof(char)*remain);
 	length <<= 3;
@@ -101,8 +106,9 @@ unsigned f3(const unsigned &B, const unsigned &C, const unsigned &D)
 	return B ^ C^D;
 }
 
-void SHA(char* s, char *res)
+void SHA( char* s, char *res,const int& len)
 {
+	length = len;
 	init(s);
 
 	long n = static_cast<long>((length >> 9));
@@ -120,10 +126,11 @@ void SHA(char* s, char *res)
 	}
 
 	//    ShowHash();
-	for (int i = 0; i<5; i++)
-	{
-		sprintf(res + (i << 3), "%08X", H[i]);
-	}
+	memcpy(res, H, sizeof(int) * 5);
+	//for (int i = 0; i<5; i++)
+	//{
+	//	sprintf(res + (i << 3), "%08X", H[i]);
+	//}
 	destroy();
 }
 
