@@ -9,9 +9,8 @@ RSA::RSA(const BigInteger&P,const BigInteger&Q,const BigInteger&E)
     this->n=this->p.multiply(this->q);
     BigInteger p_1=this->p.subtract(BigInteger::ONE);
     BigInteger q_1=this->q.subtract(BigInteger::ONE);
-    BigInteger gcd=p_1.gcd(q_1);
-
-    this->lambda_n=p_1.divide(gcd).multiply(q_1);
+//    BigInteger gcd=p_1.gcd(q_1);
+    this->lambda_n=p_1.multiply(q_1);
     this->d=this->e.modInverse(this->lambda_n);
 }
 
