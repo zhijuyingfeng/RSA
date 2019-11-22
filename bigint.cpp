@@ -25,6 +25,7 @@ BigInteger::BigInteger(const char* val)
     int32_t len=static_cast<int32_t>(strlen(val));
     if(len<=15)
     {
+        this->words=NULL;
         *this=valueOf(atoll(val));
         return;
     }
@@ -153,7 +154,7 @@ void BigInteger::show()
         return;
     }
     for(int i=0;i<this->ival;i++)
-        printf("%08X",this->words[this->ival-i-1]);
+        printf("%08x",this->words[this->ival-i-1]);
     printf("\n");
 }
 
@@ -548,6 +549,7 @@ void BigInteger::set(const int64_t &y)
         this->words=NULL;
         return;
     }
+    this->ival=2;
     this->words=new int32_t[2];
     this->words[0]=i;
     this->words[1]=(y>>32)&NEGATIVE_ONE;
@@ -1030,6 +1032,24 @@ BigInteger BigInteger::gcd(const BigInteger& b)const
 {
     BigInteger temp=this->mod(b);
     return temp.isZero()?b:b.gcd(temp);
+}
+
+int32_t BigInteger::mod3() const
+{
+    if(!this->words)
+        return this->ival%3;
+    int32_t ans=0;
+    for(int32_t i=0;i<this->ival;i++)
+    {
+        ans+=static_cast<uint32_t>(this->words[i])%3;
+    }
+    ans%=3;
+    return ans;
+}
+
+int32_t BigInteger::compareTo(const BigInteger &val)const
+{
+    return compareTo(*this,val);
 }
 
 BigInteger::BigInteger(const int32_t*data,const int32_t& len)
