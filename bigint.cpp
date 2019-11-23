@@ -719,6 +719,8 @@ void BigInteger::divide(const BigInteger &x, const BigInteger &y, BigInteger *qu
                 remainder->setNegative();
         }
     }
+   delete[] xwords;
+   delete[] ywords;
 }
 
 int64_t BigInteger::longValue() const
